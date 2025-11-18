@@ -345,7 +345,7 @@
         <span class="badge-dot"></span>
         LLM Hallucinations • Oct–Nov 2025 Snapshot
       </div>
-      <h1>From “Why LMs Hallucinate” to Possible Fixes</h1>
+      <h1>From “Why LMs Hallucinate” to Concrete Fixes</h1>
       <p class="subtitle">
         One-page brief for our team: why language models hallucinate (Kalai et&nbsp;al., OpenAI), and what the latest
         Oct–Nov&nbsp;2025 research is actually doing about it — especially around “I don’t know” behavior.
@@ -406,7 +406,7 @@
             <div>
               <div class="section-label">2 · What’s new in Oct–Nov 2025</div>
               <div class="card-title">
-                Possible fixes for hallucinations &amp; IDK
+                Concrete fixes for hallucinations &amp; IDK
                 <span class="tag risk-tag">Mitigations</span>
               </div>
             </div>
@@ -453,6 +453,22 @@
               <strong>Surveys &amp; systematization</strong> — <em>A Comprehensive Survey of Hallucination in LLMs: Causes, Detection, and Mitigation</em><br />
               Pulls together causes, detector families, and mitigation strategies, reinforcing that effective
               solutions are a <strong>stack</strong>: training, metrics, detectors, and product policy.
+            </span></li>
+          </ul>
+
+          <p style="margin-top:0.6rem;"><strong>2.4 Mechanistic interpretability: making circuits legible</strong></p>
+          <ul>
+            <li><span class="bullet"></span><span>
+              <strong>Weight-sparse transformers have interpretable circuits (Gao et&nbsp;al., 2025)</strong> introduce weight-sparse training
+              and pruning methods that yield small, human-understandable circuits for simple tasks. Although not a
+              hallucination paper, it gives us tools to:
+              <br /><br />
+              &ndash; See how specific behaviors (e.g., regex-like pattern detection, bracket counting) are implemented;<br />
+              &ndash; Study capability–interpretability trade-offs;<br />
+              &ndash; Eventually build circuit-level detectors or IDK-gates that distinguish well-understood circuits from messy ones.
+              <br /><br />
+              So: it doesn’t directly change rewards or teach “I don’t know,” but it deepens the “how does the model
+              actually compute?” layer that the other hallucination/IDK work can build on.
             </span></li>
           </ul>
 
@@ -560,6 +576,10 @@
             <div class="link-item" data-link="https://www.science.org/content/article/ai-hallucinates-because-it-s-trained-fake-answers-it-doesn-t-know">
               9. Science news: AI hallucinates because it’s trained to fake answers it doesn’t know<br />
               <code>https://www.science.org/content/article/ai-hallucinates-because-it-s-trained-fake-answers-it-doesn-t-know</code>
+            </div>
+            <div class="link-item" data-link="https://arxiv.org/pdf/2511.13653">
+              10. Weight-sparse transformers have interpretable circuits — Gao et&nbsp;al., 2025<br />
+              <code>https://arxiv.org/pdf/2511.13653</code>
             </div>
           </div>
 

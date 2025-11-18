@@ -336,6 +336,139 @@
     .collapsible.open .collapsible-toggle-icon {
       transform: rotate(90deg);
     }
+
+        /* --- Timeline styles --- */
+    .timeline-block {
+      margin-top: 1.25rem;
+    }
+
+    .timeline {
+      margin-top: 0.25rem;
+    }
+
+    .timeline-track {
+      position: relative;
+      display: flex;
+      gap: 1.5rem;
+      padding: 1.4rem 0.4rem 0.3rem;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.6) transparent;
+    }
+
+    .timeline-track::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .timeline-track::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.6);
+      border-radius: 999px;
+    }
+
+    .timeline-track::before {
+      content: "";
+      position: absolute;
+      top: 1.8rem;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(
+        90deg,
+        rgba(148, 163, 184, 0.35),
+        rgba(79, 209, 197, 0.75)
+      );
+      pointer-events: none;
+    }
+
+    .timeline-item {
+      position: relative;
+      min-width: 150px;
+      max-width: 190px;
+      padding-top: 0.1rem;
+      font-size: 0.78rem;
+      color: #e2e8f0;
+    }
+
+    .timeline-date {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      margin-bottom: 0.15rem;
+    }
+
+    .timeline-dot {
+      position: relative;
+      width: 11px;
+      height: 11px;
+      border-radius: 999px;
+      border: 2px solid #0b1020;
+      margin-bottom: 0.25rem;
+      box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.9);
+    }
+
+    .timeline-dot.paper {
+      background: var(--accent);
+    }
+
+    .timeline-dot.model {
+      background: #fbbf24;
+      box-shadow: 0 0 16px rgba(251, 191, 36, 0.9);
+    }
+
+    .timeline-dot::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 4px;
+      height: 4px;
+      border-radius: 999px;
+      background: #0b1020;
+      opacity: 0.8;
+    }
+
+    .timeline-label {
+      font-weight: 500;
+      margin-bottom: 0.1rem;
+    }
+
+    .timeline-type {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    .timeline-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 0.7rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .timeline-legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .timeline-swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+    }
+
+    .timeline-swatch.paper {
+      background: var(--accent);
+    }
+
+    .timeline-swatch.model {
+      background: #fbbf24;
+    }
+
   </style>
 </head>
 <body>
@@ -357,6 +490,111 @@
         <span class="pill">Detection &amp; Model Teams</span>
       </div>
     </header>
+
+        <!-- VISUAL TIMELINE CARD -->
+    <article class="card timeline-block">
+      <div class="card-header">
+        <div>
+          <div class="section-label">0 · 2025 timeline</div>
+          <div class="card-title">
+            Key research & model releases
+            <span class="tag">Sep–Nov 2025</span>
+          </div>
+        </div>
+      </div>
+      <p style="font-size:0.85rem;margin-bottom:0.4rem;">
+        Rough chronological view of when the main <strong>hallucination / “I don’t know” papers</strong>
+        and <strong>frontier models</strong> in this overview landed.
+      </p>
+
+      <div class="timeline">
+        <div class="timeline-track">
+          <!-- Sept 4: Why LMs hallucinate -->
+          <div class="timeline-item">
+            <div class="timeline-date">Sep&nbsp;4</div>
+            <div class="timeline-dot paper"></div>
+            <div class="timeline-label">Why LMs Hallucinate</div>
+            <div class="timeline-type">Paper · Kalai et&nbsp;al.</div>
+          </div>
+
+          <!-- Sept 29: Claude Sonnet 4.5 -->
+          <div class="timeline-item">
+            <div class="timeline-date">Sep&nbsp;29</div>
+            <div class="timeline-dot model"></div>
+            <div class="timeline-label">Claude Sonnet 4.5</div>
+            <div class="timeline-type">Model release · Anthropic</div>
+          </div>
+
+          <!-- Oct 5: Survey & DCS -->
+          <div class="timeline-item">
+            <div class="timeline-date">Oct&nbsp;5</div>
+            <div class="timeline-dot paper"></div>
+            <div class="timeline-label">Survey &amp; DCS metric</div>
+            <div class="timeline-type">Survey + eval (DCS)</div>
+          </div>
+
+          <!-- Oct 13: Internal-state detector -->
+          <div class="timeline-item">
+            <div class="timeline-date">Oct&nbsp;13</div>
+            <div class="timeline-dot paper"></div>
+            <div class="timeline-label">Internal-state detector</div>
+            <div class="timeline-type">Hallucination detection</div>
+          </div>
+
+          <!-- Oct 22–24: Teams & ABSTAIN -->
+          <div class="timeline-item">
+            <div class="timeline-date">Oct&nbsp;22–24</div>
+            <div class="timeline-dot paper"></div>
+            <div class="timeline-label">LLM teams &amp; ABSTAIN token</div>
+            <div class="timeline-type">Ensembles + abstention</div>
+          </div>
+
+          <!-- Nov 12: ChatGPT / GPT-5.1 -->
+          <div class="timeline-item">
+            <div class="timeline-date">Nov&nbsp;12</div>
+            <div class="timeline-dot model"></div>
+            <div class="timeline-label">ChatGPT&nbsp;5.1 / GPT-5.1</div>
+            <div class="timeline-type">Model upgrade · OpenAI</div>
+          </div>
+
+          <!-- Mid-Nov: Reinforced Hesitation -->
+          <div class="timeline-item">
+            <div class="timeline-date">Nov&nbsp;2025</div>
+            <div class="timeline-dot paper"></div>
+            <div class="timeline-label">Reinforced Hesitation</div>
+            <div class="timeline-type">IDK-focused training</div>
+          </div>
+
+          <!-- Nov 17: Weight-sparse circuits -->
+          <div class="timeline-item">
+            <div class="timeline-date">Nov&nbsp;17</div>
+            <div class="timeline-dot paper"></div>
+            <div class="timeline-label">Weight-sparse circuits</div>
+            <div class="timeline-type">Mechanistic interp.</div>
+          </div>
+
+          <!-- Nov 18: Gemini 3 -->
+          <div class="timeline-item">
+            <div class="timeline-date">Nov&nbsp;18</div>
+            <div class="timeline-dot model"></div>
+            <div class="timeline-label">Gemini&nbsp;3</div>
+            <div class="timeline-type">Model release · Google</div>
+          </div>
+        </div>
+
+        <div class="timeline-legend">
+          <div class="timeline-legend-item">
+            <span class="timeline-swatch paper"></span>
+            <span>Papers / research</span>
+          </div>
+          <div class="timeline-legend-item">
+            <span class="timeline-swatch model"></span>
+            <span>Frontier model releases</span>
+          </div>
+        </div>
+      </div>
+    </article>
+
 
     <main class="layout">
       <!-- LEFT COLUMN: STORY & TAKEAWAYS -->

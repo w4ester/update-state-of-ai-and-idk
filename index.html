@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>LLM Hallucinations & “I Don’t Know” — Oct–Nov 2025 Snapshot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0b1020;
+      --bg-alt: #151a2b;
+      --card: #181f33;
+      --accent: #4fd1c5;
+      --accent-soft: rgba(79, 209, 197, 0.16);
+      --text: #f7fafc;
+      --muted: #a0aec0;
+      --border: #2d3748;
+      --danger: #f56565;
+      --shadow-soft: 0 18px 45px rgba(0,0,0,0.55);
+      --radius-lg: 18px;
+      --radius-pill: 999px;
+      --transition-fast: 0.15s ease-out;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #1a2238 0, #050812 50%, #05060b 100%);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2.5rem 1.25rem 3rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 960px;
+    }
+
+    header {
+      margin-bottom: 1.75rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.15rem 0.85rem;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(79, 209, 197, 0.5);
+      background: rgba(15, 23, 42, 0.8);
+      color: var(--accent);
+      font-size: 0.75rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 12px rgba(79, 209, 197, 0.9);
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 3vw, 2.25rem);
+      margin-bottom: 0.4rem;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      max-width: 720px;
+      font-size: 0.98rem;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 1.1rem 0 1.5rem;
+    }
+
+    .pill {
+      font-size: 0.78rem;
+      padding: 0.28rem 0.8rem;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      color: #cbd5f5;
+      background: rgba(15, 23, 42, 0.8);
+      white-space: nowrap;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 2.3fr) minmax(0, 1.3fr);
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 800px) {
+      .layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .card {
+      background: radial-gradient(circle at top left, #202a46 0, #15192b 40%, #0f1422 100%);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      padding: 1.1rem 1.25rem 1.25rem;
+      box-shadow: var(--shadow-soft);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card + .card {
+      margin-top: 0.85rem;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.4rem;
+      gap: 0.75rem;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tag {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      padding: 0.15rem 0.5rem;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+
+    .risk-tag {
+      border-color: rgba(245, 101, 101, 0.8);
+      color: var(--danger);
+      background: rgba(245, 101, 101, 0.08);
+    }
+
+    .section-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.35rem;
+    }
+
+    p {
+      font-size: 0.9rem;
+      color: #e2e8f0;
+      margin-bottom: 0.35rem;
+    }
+
+    ul {
+      list-style: none;
+      margin-left: 0;
+    }
+
+    li {
+      font-size: 0.88rem;
+      margin-bottom: 0.25rem;
+      color: #cbd5f5;
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .bullet {
+      width: 0.28rem;
+      height: 0.28rem;
+      border-radius: 999px;
+      background: var(--accent);
+      margin-top: 0.45rem;
+      flex-shrink: 0;
+    }
+
+    .link-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+      margin-top: 0.35rem;
+    }
+
+    .link-item {
+      font-size: 0.8rem;
+      word-break: break-all;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    code {
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.78rem;
+      background: rgba(15, 23, 42, 0.9);
+      padding: 0.12rem 0.35rem;
+      border-radius: 0.3rem;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      color: #edf2ff;
+    }
+
+    .callout {
+      background: linear-gradient(120deg, rgba(79, 209, 197, 0.12), transparent);
+      border-radius: 12px;
+      padding: 0.6rem 0.75rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+      border: 1px solid rgba(79, 209, 197, 0.25);
+      margin-top: 0.45rem;
+    }
+
+    .callout strong {
+      color: #e2e8f0;
+    }
+
+    .badge-year {
+      position: absolute;
+      right: 1.1rem;
+      top: 0.9rem;
+      font-size: 0.7rem;
+      color: var(--muted);
+      opacity: 0.8;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.7rem;
+    }
+
+    button {
+      font-family: inherit;
+      font-size: 0.8rem;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text);
+      padding: 0.38rem 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+    }
+
+    button.primary {
+      border-color: rgba(79, 209, 197, 0.9);
+      background: radial-gradient(circle at top left, var(--accent-soft) 0, rgba(15, 23, 42, 0.96) 45%, #050812 100%);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    .tiny-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 0.3rem;
+    }
+
+    .status {
+      font-size: 0.78rem;
+      margin-left: 0.4rem;
+      color: var(--muted);
+    }
+
+    .status.ok {
+      color: #9ae6b4;
+    }
+
+    .status.error {
+      color: var(--danger);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .collapsible {
+      margin-top: 0.25rem;
+    }
+
+    .collapsible-toggle {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      user-select: none;
+    }
+
+    .collapsible-toggle-icon {
+      transition: transform var(--transition-fast);
+      font-size: 0.75rem;
+    }
+
+    .collapsible-content {
+      margin-top: 0.45rem;
+      font-size: 0.86rem;
+      color: #e2e8f0;
+    }
+
+    .collapsible.open .collapsible-toggle-icon {
+      transform: rotate(90deg);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="badge">
+        <span class="badge-dot"></span>
+        LLM Hallucinations • Oct–Nov 2025 Snapshot
+      </div>
+      <h1>From “Why LMs Hallucinate” to Concrete Fixes</h1>
+      <p class="subtitle">
+        One-page brief for our team: why language models hallucinate (Kalai et&nbsp;al., OpenAI), and what the latest
+        Oct–Nov&nbsp;2025 research is actually doing about it — especially around “I don’t know” behavior.
+      </p>
+      <div class="pill-row">
+        <span class="pill">Hallucination Mitigation</span>
+        <span class="pill">“I Don’t Know” Training</span>
+        <span class="pill">Abstention &amp; New Metrics</span>
+        <span class="pill">Detection &amp; Model Teams</span>
+      </div>
+    </header>
+
+    <main class="layout">
+      <!-- LEFT COLUMN: STORY & TAKEAWAYS -->
+      <section>
+        <!-- Why hallucinate -->
+        <article class="card">
+          <div class="badge-year">Sep 2025</div>
+          <div class="card-header">
+            <div>
+              <div class="section-label">1 · Why LMs hallucinate</div>
+              <div class="card-title">
+                Why Language Models Hallucinate
+                <span class="tag">Kalai et&nbsp;al., OpenAI</span>
+              </div>
+            </div>
+          </div>
+          <p>
+            The core message from <strong>“Why Language Models Hallucinate”</strong> and the OpenAI blog:
+            hallucinations are not a weird bug — they’re a <strong>statistically expected error mode</strong>
+            under current training + evaluation.
+          </p>
+          <ul>
+            <li><span class="bullet"></span><span>
+              <strong>Pretraining:</strong> even with perfect data, next-token prediction plus limited capacity
+              guarantees some plausible-but-wrong strings in the model’s distribution.
+            </span></li>
+            <li><span class="bullet"></span><span>
+              <strong>Post-training + scoreboards:</strong> benchmarks give the same 0 points for a wrong answer and
+              for “I don’t know,” so models are literally <em>rewarded</em> for guessing instead of abstaining.
+            </span></li>
+            <li><span class="bullet"></span><span>
+              Result: models become excellent <strong>test-takers</strong> but poor at expressing uncertainty — hence
+              confident hallucinations.
+            </span></li>
+          </ul>
+          <div class="callout">
+            <strong>Key idea:</strong> Fixing hallucinations is partly a <em>socio-technical</em> problem:
+            change how we <strong>score</strong> evaluations so that wrong answers are penalized more than honest
+            “I don’t know.”
+          </div>
+        </article>
+
+        <!-- New fixes -->
+        <article class="card">
+          <div class="badge-year">Oct–Nov 2025</div>
+          <div class="card-header">
+            <div>
+              <div class="section-label">2 · What’s new in Oct–Nov 2025</div>
+              <div class="card-title">
+                Concrete fixes for hallucinations &amp; IDK
+                <span class="tag risk-tag">Mitigations</span>
+              </div>
+            </div>
+          </div>
+          <p><strong>2.1 Training-time: teach models to hesitate</strong></p>
+          <ul>
+            <li><span class="bullet"></span><span>
+              <strong>Reinforced Hesitation (RH)</strong> — <em>Honesty over Accuracy: Trustworthy LMs through Reinforced Hesitation</em><br />
+              Uses a <code>+1 / 0 / −λ</code> reward: correct = +1, “I don’t know” = 0, wrong = −λ. For logic/QA tasks,
+              this creates models that <strong>answer when confident and abstain when risky</strong>, dramatically
+              shrinking error rates at the cost of more IDK’s.
+            </span></li>
+            <li><span class="bullet"></span><span>
+              <strong>ABSTAIN token</strong> — <em>All We Also Need Is ABSTAIN: Eliminating Hallucinations via a Single Token</em><br />
+              Adds a dedicated <code>&lt;ABSTAIN&gt;</code> token and trains on corrupted prompts. On unseen facts,
+              the model learns to output <code>&lt;ABSTAIN&gt;</code> instead of fabricating — turning many
+              hallucinations into explicit IDK responses.
+            </span></li>
+          </ul>
+
+          <p style="margin-top:0.6rem;"><strong>2.2 Evaluation: new scoring rules</strong></p>
+          <ul>
+            <li><span class="bullet"></span><span>
+              <strong>Distributional Correctness Score (DCS)</strong> — <em>Measuring LLM Hallucinations Through Distributional Correctness</em><br />
+              Scores the <em>full probability distribution</em>, rewarding probability mass on the correct answer
+              or IDK and penalizing mass on wrong answers. Encourages uncertainty to flow into “I don’t know,”
+              not into polished wrong statements.
+            </span></li>
+          </ul>
+
+          <p style="margin-top:0.6rem;"><strong>2.3 Detection &amp; ensembles: catching hallucinations before users see them</strong></p>
+          <ul>
+            <li><span class="bullet"></span><span>
+              <strong>Internal-state + reasoning consistency</strong> — <em>Hallucination Detection via Internal States and Structured Reasoning Consistency</em><br />
+              Combines internal activations with chain-of-thought consistency checks via cross-attention, yielding
+              state-of-the-art hallucination detection across fact-heavy and reasoning-heavy tasks.
+            </span></li>
+            <li><span class="bullet"></span><span>
+              <strong>Model teams / consortium consistency</strong> — <em>Teaming LLMs to Detect and Mitigate Hallucinations</em><br />
+              Uses multiple diverse LLMs and agreement-based voting. Large disagreement is treated as a signal to
+              abstain, escalate, or fall back to retrieval, cutting hallucinations versus single-model setups.
+            </span></li>
+            <li><span class="bullet"></span><span>
+              <strong>Surveys &amp; systematization</strong> — <em>A Comprehensive Survey of Hallucination in LLMs: Causes, Detection, and Mitigation</em><br />
+              Pulls together causes, detector families, and mitigation strategies, reinforcing that effective
+              solutions are a <strong>stack</strong>: training, metrics, detectors, and product policy.
+            </span></li>
+          </ul>
+
+          <div class="collapsible" data-collapsible>
+            <div class="collapsible-toggle">
+              <span class="collapsible-toggle-icon">▶</span>
+              More context from Science / media
+            </div>
+            <div class="collapsible-content hidden">
+              <p>
+                A recent <em>Science</em> news piece (<strong>“AI hallucinates because it’s trained to fake it till it
+                makes it”</strong>) distills this for non-experts: current models are optimized like students on exams
+                that punish “I don’t know,” so they confidently make things up. Proposed remedy: teach models to
+                admit uncertainty and change scoreboards to reward that honesty.
+              </p>
+            </div>
+          </div>
+        </article>
+
+        <!-- What our lab can do -->
+        <article class="card">
+          <div class="card-header">
+            <div>
+              <div class="section-label">3 · Suggested actions for our lab</div>
+              <div class="card-title">
+                How to operationalize this work
+              </div>
+            </div>
+          </div>
+          <ul>
+            <li><span class="bullet"></span><span>
+              <strong>Adopt ternary rewards or abstention-aware scoring</strong> in our evaluations:
+              separate <em>correct / wrong / abstain</em>. Penalize wrong answers more than IDK,
+              especially in high-risk domains.
+            </span></li>
+            <li><span class="bullet"></span><span>
+              <strong>Add an explicit abstain primitive</strong> (token or action) and train with
+              unanswerable/corrupted prompts so models have a native way to say “I don’t know.”
+            </span></li>
+            <li><span class="bullet"></span><span>
+              <strong>Front models with detectors and/or model teams</strong>: use internal-state +
+              CoT-based detectors and, where needed, ensembles of diverse LLMs to gate outputs
+              and trigger retrieval or escalation when risk is high.
+            </span></li>
+            <li><span class="bullet"></span><span>
+              <strong>Align product policy with this behavior</strong>: document that, for certain
+              workloads, “frequent but honest IDK” is preferable to fewer but overconfident answers.
+            </span></li>
+          </ul>
+          <div class="callout">
+            <strong>Bottom line:</strong> hallucinations won’t fully disappear, but we can
+            <em>re-route</em> many of them into refusals/IDKs and make the remaining ones easier
+            to detect, measure, and mitigate.
+          </div>
+        </article>
+      </section>
+
+      <!-- RIGHT COLUMN: LINKS & UTILITIES -->
+      <aside>
+        <article class="card">
+          <div class="card-header">
+            <div>
+              <div class="section-label">4 · Core resources</div>
+              <div class="card-title">
+                Papers &amp; articles (Oct–Nov 2025)
+              </div>
+            </div>
+          </div>
+
+          <p style="margin-bottom:0.3rem;">Copy-and-paste-friendly links for deeper reading:</p>
+          <div id="linkContainer" class="link-list">
+            <!-- Each item has data-link for JS "copy all" -->
+            <div class="link-item" data-link="https://arxiv.org/abs/2509.04664">
+              1. Why Language Models Hallucinate — Kalai et&nbsp;al., 2025<br />
+              <code>https://arxiv.org/abs/2509.04664</code>
+            </div>
+            <div class="link-item" data-link="https://openai.com/index/why-language-models-hallucinate/">
+              2. OpenAI blog: Why language models hallucinate<br />
+              <code>https://openai.com/index/why-language-models-hallucinate/</code>
+            </div>
+            <div class="link-item" data-link="https://arxiv.org/abs/2511.11500">
+              3. Honesty over Accuracy: Trustworthy LMs through Reinforced Hesitation<br />
+              <code>https://arxiv.org/abs/2511.11500</code>
+            </div>
+            <div class="link-item" data-link="https://www.preprints.org/manuscript/202510.1827">
+              4. All We Also Need Is ABSTAIN: Eliminating Hallucinations via a Single Token<br />
+              <code>https://www.preprints.org/manuscript/202510.1827</code>
+            </div>
+            <div class="link-item" data-link="https://arxiv.org/abs/2510.04302">
+              5. Measuring LLM Hallucinations Through Distributional Correctness<br />
+              <code>https://arxiv.org/abs/2510.04302</code>
+            </div>
+            <div class="link-item" data-link="https://arxiv.org/abs/2510.11529">
+              6. Hallucination Detection via Internal States and Structured Reasoning Consistency in LLMs<br />
+              <code>https://arxiv.org/abs/2510.11529</code>
+            </div>
+            <div class="link-item" data-link="https://arxiv.org/abs/2510.19507">
+              7. Teaming LLMs to Detect and Mitigate Hallucinations<br />
+              <code>https://arxiv.org/abs/2510.19507</code>
+            </div>
+            <div class="link-item" data-link="https://arxiv.org/abs/2510.06265">
+              8. A Comprehensive Survey of Hallucination in Large Language Models: Causes, Detection, and Mitigation<br />
+              <code>https://arxiv.org/abs/2510.06265</code>
+            </div>
+            <div class="link-item" data-link="https://www.science.org/content/article/ai-hallucinates-because-it-s-trained-fake-answers-it-doesn-t-know">
+              9. Science news: AI hallucinates because it’s trained to fake answers it doesn’t know<br />
+              <code>https://www.science.org/content/article/ai-hallucinates-because-it-s-trained-fake-answers-it-doesn-t-know</code>
+            </div>
+          </div>
+
+          <div class="controls">
+            <button class="primary" id="copyLinksBtn" type="button">
+              📋 Copy all links
+            </button>
+            <button id="toggleLinksBtn" type="button">
+              👁 Toggle raw URLs
+            </button>
+          </div>
+          <div id="copyStatus" class="tiny-label"></div>
+        </article>
+
+        <article class="card">
+          <div class="card-header">
+            <div>
+              <div class="section-label">5 · How to use this page</div>
+              <div class="card-title">For GitHub Pages &amp; internal sharing</div>
+            </div>
+          </div>
+          <ul>
+            <li><span class="bullet"></span><span>
+              Drop this file in a GitHub repo as <code>index.html</code> and enable GitHub Pages.
+            </span></li>
+            <li><span class="bullet"></span><span>
+              Share the URL internally as a quick primer on hallucination research &amp; mitigations.
+            </span></li>
+            <li><span class="bullet"></span><span>
+              Use the <strong>Copy all links</strong> button to paste citations into docs or slide decks.
+            </span></li>
+          </ul>
+        </article>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    // Copy all resource links to clipboard
+    (function () {
+      const copyBtn = document.getElementById("copyLinksBtn");
+      const toggleBtn = document.getElementById("toggleLinksBtn");
+      const statusEl = document.getElementById("copyStatus");
+      const linkContainer = document.getElementById("linkContainer");
+
+      function setStatus(message, kind) {
+        if (!statusEl) return;
+        statusEl.textContent = message || "";
+        statusEl.classList.remove("ok", "error");
+        if (kind) statusEl.classList.add(kind);
+      }
+
+      if (copyBtn) {
+        copyBtn.addEventListener("click", async () => {
+          try {
+            const items = Array.from(
+              linkContainer.querySelectorAll("[data-link]")
+            );
+            const lines = items.map((el, i) => {
+              const url = el.getAttribute("data-link") || "";
+              return `${i + 1}. ${url}`;
+            });
+            const text = lines.join("\n");
+            await navigator.clipboard.writeText(text);
+            setStatus("Links copied to clipboard.", "ok");
+          } catch (err) {
+            console.error(err);
+            setStatus("Could not access clipboard in this browser.", "error");
+          }
+        });
+      }
+
+      if (toggleBtn) {
+        toggleBtn.addEventListener("click", () => {
+          const codes = linkContainer.querySelectorAll("code");
+          codes.forEach((code) => {
+            code.classList.toggle("hidden");
+          });
+        });
+      }
+
+      // Simple collapsible sections
+      document.querySelectorAll("[data-collapsible]").forEach((wrap) => {
+        const toggle = wrap.querySelector(".collapsible-toggle");
+        const content = wrap.querySelector(".collapsible-content");
+        if (!toggle || !content) return;
+
+        toggle.addEventListener("click", () => {
+          const isHidden = content.classList.contains("hidden");
+          content.classList.toggle("hidden", !isHidden);
+          wrap.classList.toggle("open", isHidden);
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
